@@ -10,51 +10,29 @@ import UIKit
 
 class ToDoTableViewController: UITableViewController {
     
-    var toDos : [ToDo] = []
+    var toDos : [ToDoCoreData] = []
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // toDos = createToDos()
-        
-        
+
     }
     
     override func viewWillAppear(_ animated: Bool) {
         getToDos()
+        tableView.reloadData()
     }
     
     func getToDos() {
-        if let context = (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer.viewContext {
-            if let coreDataToDos = try? context.fetch(ToDoCoreData.fetchRequest()) as? [ToDoCoreData]{
-                if let theToDos = coreDataToDos {
-                    toDos = theToDos
-                }
-            }
+        if let context = (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer.viewContext,
+           let coreDataToDos = try? context.fetch(ToDoCoreData.fetchRequest()) as? [ToDoCoreData] {
+            
+            toDos = coreDataToDos
+            
         }
     }
-    
-   
-    
-//        func createToDos() -> [ToDo]{
-//
-//            let eggs = ToDo()
-//            eggs.name = "Buy eggs"
-//            eggs.important = true
-//
-//            let dog = ToDo()
-//            dog.name = "Walk the dog"
-//
-//            let cheese = ToDo()
-//            cheese.name = "Eat cheese"
-//
-//
-//            return [eggs, dog, cheese]
-//        }
-//
+
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
         return toDos.count
     }
     
@@ -63,20 +41,12 @@ class ToDoTableViewController: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
         
         let toDo = toDos[indexPath.row]
-        
-        if let name = toDo {
-            
-            if toDo.important {
-                cell.textLabel?.text = "❗️" + name
-            }else {
-                cell.textLabel?.text = toDo.name
-            }
-        }
-        
+        cell.textLabel?.text = "\((toDo.important ? "❗️":""))" + (toDo.name ?? "")
         return cell
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
         let toDo = toDos[indexPath.row]
         performSegue(withIdentifier: "moveToComplete", sender: toDo)
     }
